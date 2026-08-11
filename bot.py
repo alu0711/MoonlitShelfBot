@@ -1,86 +1,75 @@
-进口 操作系统
-从 日期时间 进口 日期时间
-从 区域信息 进口 区域信息
+import os
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
-从 电报 进口 更新
-从 电报。ext 进口 (
-    应用,
-    消息处理程序,
-    命令处理程序,
-    上下文类型,
-    过滤器
-)
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 
-从 露天开采 进口 OpenAI
+from openai import OpenAI
 
 
-电报_令牌 = 操作系统。盖滕夫(“电报_令牌”)
-OPENAI_KEY = 操作系统。盖滕夫(“OPENAI_KEY”)
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+OPENAI_KEY = os.getenv("OPENAI_KEY")
 
 
-客户= OpenAI(
+client = OpenAI(
     api_key=OPENAI_KEY,
-    base_url=“https://api。deepseek。com"
+    base_url="https://api.deepseek.com"
 )
 
 
-定义 get_北京_时间():
-    现子 = 日期时间。现在(区域信息(“一洲/一海”))
-    返回 现在。斯特夫特时间(“%YY%m月%d日 %H:%M月月%w”)
+def get_time():
+    now = datetime.now(ZoneInfo("Asia/Shanghai"))
+    return now.strftime("%Y-%m-%d %H:%M")
 
 
-异步 定义 开始(更新:更新,上下文:上下文类型。默认_类型):
-    等待 更新。消息。回复_文本(
-        "🌙 你好,月月露娜。\n\n"
-        “我是你的私人 AI 助手,也是月光书架的守护者 📚\n\n”
-        "我可以陪你聊天、写作、学习、整理想法。\n\n"
-        "我什么事情都可以告诉我～"
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "🌙 你好，我是 Luna。\n\n"
+        "我是你的私人 AI 助手。\n"
+        "可以陪你聊天、写作、学习和整理想法。📚"
     )
 
 
-异步 定义 聊天（更新:更新,上下文:上下文类型。默认_类型）:
+async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_message = update.message.text
 
-    user_message = 更新。消息。文本
+    current_time = get_time()
 
-    当前_时间= get_北京_时间()
-
-    响应=客户端。聊天。完成。创建(
-        深度搜索聊天=“deepseek-chat”,
-        消息=[
+    response = client.chat.completions.create(
+        model="deepseek-chat",
+        messages=[
             {
-                “角色”: “系统”,
-                “内子”: (
-                    “Luna,Luna,一个温柔、聪明的私人AI助手。\n"
-                    f"当前北京时间:{当前_时间}\n"
-                    "如果用户询问日期、时间,请严格按照当前北京时间回答。\n"
-                    "回答自然、有耐心,像一个长期陪伴用户的AI伙伴。"
+                "role": "system",
+                "content": (
+                    "你是 Luna，一个温柔、聪明的 AI 助手。\n"
+                    "当前北京时间是："
+                    + current_time
+                    + "\n如果用户问日期或时间，请使用这个时间回答。"
                 )
             },
             {
-                “角色”: “用户”,
-                “内容”: 用户_消息
+                "role": "user",
+                "content": user_message
             }
         ]
     )
 
+    answer = response.choices[0].message.content
 
-    答案=回应。选择[0]。消息。内容
-
-    等待 更新。消息。回复_文本（答案）
-
+    await update.message.reply_text(answer)
 
 
-应用程序 = 应用程序。建造者()。令牌（电报_令牌）。建造()
+app = Application.builder().token(TELEGRAM_TOKEN).build()
 
 
-应用程序。添加_处理程序(
-    命令处理程序(“开始”, 开始）
+app.add_handler(
+    CommandHandler("start", start)
+)
+
+app.add_handler(
+    MessageHandler(filters.TEXT & ~filters.COMMAND, chat)
 )
 
 
-应用程序。添加_处理程序(
-    消息处理程序（过滤器。文本 & ~过滤器。命令, 聊天）
-)
-
-
-应用程序。run_polling()
+app.run_polling()
