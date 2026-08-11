@@ -12,7 +12,12 @@ client = OpenAI(
     base_url="https://api.deepseek.com"
 )
 
-async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "￼ 你好，我是 Luna。\n\n"
+        "我是你的私人 AI 助手，也是月光书架的守护者。\n\n"
+        "你可以和我聊天、写作、学习、整理想法，也可以和我一起探索书籍世界。￼"
+    )async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_message = update.message.text
 
     response = client.chat.completions.create(
@@ -35,6 +40,10 @@ async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 app = Application.builder().token(TELEGRAM_TOKEN).build()
+
+app.add_handler(
+    CommandHandler("start", start)
+)
 
 app.add_handler(
     MessageHandler(filters.TEXT & ~filters.COMMAND, chat)
