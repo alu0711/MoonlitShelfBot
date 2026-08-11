@@ -1,69 +1,86 @@
-import os
-from telegram import Update
-from telegram.ext import (
-    Application,
-    MessageHandler,
-    CommandHandler,
-    ContextTypes,
-    filters
+进口 操作系统
+从 日期时间 进口 日期时间
+从 区域信息 进口 区域信息
+
+从 电报 进口 更新
+从 电报。ext 进口 (
+    应用,
+    消息处理程序,
+    命令处理程序,
+    上下文类型,
+    过滤器
 )
-from openai import OpenAI
+
+从 露天开采 进口 OpenAI
 
 
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-OPENAI_KEY = os.getenv("OPENAI_KEY")
+电报_令牌 = 操作系统。盖滕夫(“电报_令牌”)
+OPENAI_KEY = 操作系统。盖滕夫(“OPENAI_KEY”)
 
 
-client = OpenAI(
+客户= OpenAI(
     api_key=OPENAI_KEY,
-    base_url="https://api.deepseek.com"
+    base_url=“https://api。deepseek。com"
 )
 
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "🌙 你好，我是 Luna。\n\n"
-        "我是你的私人 AI 助手，也是月光书架的守护者 📚\n\n"
-        "你可以和我聊天、写作、学习、整理想法，也可以探索书籍世界。\n\n"
-        "随时告诉我你的想法吧～"
+定义 get_北京_时间():
+    现子 = 日期时间。现在(区域信息(“一洲/一海”))
+    返回 现在。斯特夫特时间(“%YY%m月%d日 %H:%M月月%w”)
+
+
+异步 定义 开始(更新:更新,上下文:上下文类型。默认_类型):
+    等待 更新。消息。回复_文本(
+        "🌙 你好,月月露娜。\n\n"
+        “我是你的私人 AI 助手,也是月光书架的守护者 📚\n\n”
+        "我可以陪你聊天、写作、学习、整理想法。\n\n"
+        "我什么事情都可以告诉我～"
     )
 
 
-async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_message = update.message.text
+异步 定义 聊天（更新:更新,上下文:上下文类型。默认_类型）:
 
-    response = client.chat.completions.create(
-        model="deepseek-chat",
-        messages=[
+    user_message = 更新。消息。文本
+
+    当前_时间= get_北京_时间()
+
+    响应=客户端。聊天。完成。创建(
+        深度搜索聊天=“deepseek-chat”,
+        消息=[
             {
-                "role": "system",
-                "content": (
-                    "你是 Luna，一个温柔、聪明的私人AI助手。"
-                    "你喜欢帮助用户解决问题，语气自然、有耐心。"
+                “角色”: “系统”,
+                “内子”: (
+                    “Luna,Luna,一个温柔、聪明的私人AI助手。\n"
+                    f"当前北京时间:{当前_时间}\n"
+                    "如果用户询问日期、时间,请严格按照当前北京时间回答。\n"
+                    "回答自然、有耐心,像一个长期陪伴用户的AI伙伴。"
                 )
             },
             {
-                "role": "user",
-                "content": user_message
+                “角色”: “用户”,
+                “内容”: 用户_消息
             }
         ]
     )
 
-    answer = response.choices[0].message.content
 
-    await update.message.reply_text(answer)
+    答案=回应。选择[0]。消息。内容
 
-
-app = Application.builder().token(TELEGRAM_TOKEN).build()
+    等待 更新。消息。回复_文本（答案）
 
 
-app.add_handler(
-    CommandHandler("start", start)
+
+应用程序 = 应用程序。建造者()。令牌（电报_令牌）。建造()
+
+
+应用程序。添加_处理程序(
+    命令处理程序(“开始”, 开始）
 )
 
-app.add_handler(
-    MessageHandler(filters.TEXT & ~filters.COMMAND, chat)
+
+应用程序。添加_处理程序(
+    消息处理程序（过滤器。文本 & ~过滤器。命令, 聊天）
 )
 
 
-app.run_polling()
+应用程序。run_polling()
