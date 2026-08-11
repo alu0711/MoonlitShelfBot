@@ -7,7 +7,10 @@ from openai import OpenAI
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 OPENAI_KEY = os.getenv("OPENAI_KEY")
 
-client = OpenAI(api_key=OPENAI_KEY)
+client = OpenAI(
+    api_key=OPENAI_KEY,
+    base_url="https://api.deepseek.com"
+)
 
 async def chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_message = update.message.text
